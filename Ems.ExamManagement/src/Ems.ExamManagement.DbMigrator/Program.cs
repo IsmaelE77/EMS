@@ -25,6 +25,7 @@ class Program
                 .Enrich.FromLogContext()
             .WriteTo.Async(c => c.File("Logs/logs.txt"))
             .WriteTo.Async(c => c.Console())
+            .WriteTo.Async(c => c.OpenTelemetry())
             .CreateLogger();
 
         await CreateHostBuilder(args).RunConsoleAsync();

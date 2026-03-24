@@ -25,6 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Ems.Aspire\Ems.ServiceDefaults\Ems.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Ems.ExamExecution.Application\Ems.ExamExecution.Application.csproj" />
     <ProjectReference Include="..\Ems.ExamExecution.EntityFrameworkCore\Ems.ExamExecution.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Ems.ExamExecution.HttpApi\Ems.ExamExecution.HttpApi.csproj" />

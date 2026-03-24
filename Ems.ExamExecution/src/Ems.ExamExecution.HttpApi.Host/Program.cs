@@ -33,8 +33,11 @@ public class Program
                 .UseAutofac()
                 .UseSerilog();
             await builder.AddApplicationAsync<ExamExecutionHttpApiHostModule>();
+            builder.AddServiceDefaults();
+
             var app = builder.Build();
             await app.InitializeApplicationAsync();
+            app.MapDefaultEndpoints();
             await app.RunAsync();
             return 0;
         }

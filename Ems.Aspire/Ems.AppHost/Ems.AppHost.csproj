@@ -8,4 +8,14 @@
     <UserSecretsId>bcdc4e0e-826c-47a4-80c7-27ed89ca2e6b</UserSecretsId>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Ems.ExamExecution\src\Ems.ExamExecution.DbMigrator\Ems.ExamExecution.DbMigrator.csproj" />
+    <ProjectReference Include="..\..\Ems.ExamExecution\src\Ems.ExamExecution.HttpApi.Host\Ems.ExamExecution.HttpApi.Host.csproj" />
+    <ProjectReference Include="..\..\Ems.ExamManagement\src\Ems.ExamManagement.DbMigrator\Ems.ExamManagement.DbMigrator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.2.0" />
+  </ItemGroup>
+
 </Project>
