@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Ems.AppHost/Ems.AppHost.csproj" />
+  <Project Path="Ems.ServiceDefaults/Ems.ServiceDefaults.csproj" />
+</Solution>

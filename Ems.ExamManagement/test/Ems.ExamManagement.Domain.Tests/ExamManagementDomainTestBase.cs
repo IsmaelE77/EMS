@@ -1,0 +1,10 @@
+﻿using Volo.Abp.Modularity;
+
+namespace Ems.ExamManagement;
+
+/* Inherit from this class for your domain layer tests. */
+public abstract class ExamManagementDomainTestBase<TStartupModule> : ExamManagementTestBase<TStartupModule>
+    where TStartupModule : IAbpModule
+{
+
+}

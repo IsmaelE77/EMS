@@ -1,0 +1,48 @@
+<Solution>
+  <Folder Name="/Ems.Aspire/">
+    <Project Path="Ems.Aspire/Ems.AppHost/Ems.AppHost.csproj" />
+    <Project Path="Ems.Aspire/Ems.ServiceDefaults/Ems.ServiceDefaults.csproj" />
+  </Folder>
+  <Folder Name="/Ems.ExamExecution/" />
+  <Folder Name="/Ems.ExamExecution/src/">
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.Application.Contracts/Ems.ExamExecution.Application.Contracts.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.Application/Ems.ExamExecution.Application.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.DbMigrator/Ems.ExamExecution.DbMigrator.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.Domain.Shared/Ems.ExamExecution.Domain.Shared.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.Domain/Ems.ExamExecution.Domain.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.EntityFrameworkCore/Ems.ExamExecution.EntityFrameworkCore.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.HttpApi.Client/Ems.ExamExecution.HttpApi.Client.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.HttpApi.Host/Ems.ExamExecution.HttpApi.Host.csproj" />
+    <Project Path="Ems.ExamExecution/src/Ems.ExamExecution.HttpApi/Ems.ExamExecution.HttpApi.csproj" />
+  </Folder>
+  <Folder Name="/Ems.ExamExecution/test/">
+    <Project Path="Ems.ExamExecution/test/Ems.ExamExecution.Application.Tests/Ems.ExamExecution.Application.Tests.csproj" />
+    <Project Path="Ems.ExamExecution/test/Ems.ExamExecution.Domain.Tests/Ems.ExamExecution.Domain.Tests.csproj" />
+    <Project Path="Ems.ExamExecution/test/Ems.ExamExecution.EntityFrameworkCore.Tests/Ems.ExamExecution.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="Ems.ExamExecution/test/Ems.ExamExecution.HttpApi.Client.ConsoleTestApp/Ems.ExamExecution.HttpApi.Client.ConsoleTestApp.csproj" />
+    <Project Path="Ems.ExamExecution/test/Ems.ExamExecution.TestBase/Ems.ExamExecution.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Ems.ExamManagement/" />
+  <Folder Name="/Ems.ExamManagement/src/">
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.Application.Contracts/Ems.ExamManagement.Application.Contracts.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.Application/Ems.ExamManagement.Application.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.DbMigrator/Ems.ExamManagement.DbMigrator.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.Domain.Shared/Ems.ExamManagement.Domain.Shared.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.Domain/Ems.ExamManagement.Domain.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.EntityFrameworkCore/Ems.ExamManagement.EntityFrameworkCore.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.HttpApi.Client/Ems.ExamManagement.HttpApi.Client.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.HttpApi.Host/Ems.ExamManagement.HttpApi.Host.csproj" />
+    <Project Path="Ems.ExamManagement/src/Ems.ExamManagement.HttpApi/Ems.ExamManagement.HttpApi.csproj" />
+  </Folder>
+  <Folder Name="/Ems.ExamManagement/test/">
+    <Project Path="Ems.ExamManagement/test/Ems.ExamManagement.Application.Tests/Ems.ExamManagement.Application.Tests.csproj" />
+    <Project Path="Ems.ExamManagement/test/Ems.ExamManagement.Domain.Tests/Ems.ExamManagement.Domain.Tests.csproj" />
+    <Project Path="Ems.ExamManagement/test/Ems.ExamManagement.EntityFrameworkCore.Tests/Ems.ExamManagement.EntityFrameworkCore.Tests.csproj" />
+    <Project Path="Ems.ExamManagement/test/Ems.ExamManagement.HttpApi.Client.ConsoleTestApp/Ems.ExamManagement.HttpApi.Client.ConsoleTestApp.csproj" />
+    <Project Path="Ems.ExamManagement/test/Ems.ExamManagement.TestBase/Ems.ExamManagement.TestBase.csproj" />
+  </Folder>
+  <Folder Name="/Ems.Shared/" />
+  <Folder Name="/Ems.Shared/src/">
+    <Project Path="Ems.Shared/src/Ems.Shared.Domain.Shared/Ems.Shared.Domain.Shared.csproj" />
+  </Folder>
+</Solution>
