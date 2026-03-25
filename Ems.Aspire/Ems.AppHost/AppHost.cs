@@ -12,7 +12,7 @@ var examManagementDb = postgres
 var examManagementMigrator = builder
     .AddProject<Ems_ExamManagement_DbMigrator>("examManagementDbMigrator")
     .WithReference(examManagementDb, "Default")
-    .WaitForStart(examManagementDb)
+    .WaitFor(examManagementDb)
     .WithReplicas(1);
 
 var examManagementHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("examManagementHostApi")
@@ -26,7 +26,7 @@ var examExecutionDb = postgres
 var examExecutionMigrator =builder
     .AddProject<Ems_ExamExecution_DbMigrator>("examExecutionDbMigrator")
     .WithReference(examExecutionDb, "Default")
-    .WaitForStart(examExecutionDb)
+    .WaitFor(examExecutionDb)
     .WithReplicas(1);
 
 var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("examExecutionHostApi")
