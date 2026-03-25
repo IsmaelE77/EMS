@@ -2,12 +2,14 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
-var examManagementDb = builder.AddPostgres("examManagementPostgres")
+var postgres = builder.AddPostgres("examManagementPostgres")
     .WithImage("postgres:15.15-trixie")
-    .WithDataVolume("examManagementDb-postgres-data")
+    .WithDataVolume("ems-postgres");
+
+var examManagementDb = postgres
     .AddDatabase("examManagementDb");
 
-var examManagementMigrator =builder
+var examManagementMigrator = builder
     .AddProject<Ems_ExamManagement_DbMigrator>("examManagementDbMigrator")
     .WithReference(examManagementDb, "Default")
     .WaitForStart(examManagementDb)
@@ -18,9 +20,7 @@ var examManagementHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("exa
     .WithHttpHealthCheck()
     .WithReference(examManagementDb, "Default");
 
-var examExecutionDb = builder.AddPostgres("examExecutionPostgres")
-    .WithImage("postgres:15.15-trixie")
-    .WithDataVolume("examExecutionDb-postgres-data")
+var examExecutionDb = postgres
     .AddDatabase("ExamExecution");
 
 var examExecutionMigrator =builder
