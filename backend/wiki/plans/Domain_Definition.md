@@ -103,7 +103,6 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `Explanation`: String?
     *   `Medias`: Collection of `QuestionMedia` (Entity)
         *   `Id`: Guid
-        *   `Url`: String (Relative path or Blob Name)
         *   `Type`: Enum (Image, Audio, Video, CodeSnippet)
         *   `MimeType`: String
         *   `DisplayOrder`: Int
@@ -189,7 +188,6 @@ This document serves as the authoritative source for the **Domain Layer**. It de
                 *   `OrderIndex`: Int
             *   `Medias`: Collection of `DeliveredMedia` (Value Object)
                 *   `Id`: Guid
-                *   `LocalPath`: String (Cached file path)
                 *   `Type`: Enum (Image, Audio, Video, CodeSnippet)
                 *   `MimeType`: String
     *   `AllowedStudents`: Collection of `DeliveredStudentInfo` (Value Object)

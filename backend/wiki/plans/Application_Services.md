@@ -9,15 +9,15 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
 ### 1.1 `ExamPackageDto` (The Sealed Envelope)
 *   **Purpose:** The complete data blob downloaded by the Local Server.
 *   **Structure:**
+    
     ```csharp
     public class ExamPackageDto
     {
         public Guid ExamInstanceId { get; set; }
         public string Title { get; set; }
         public int DataVersion { get; set; }
-        public TimeSpan Duration { get; set; }
-        public ExamNavigationMode NavigationMode { get; set; } // Linear vs Free
-        
+        public TimeSpan Duration { get; set; }    
+        public List<DeliveredStudentInfoDto> DeliveredStudentInfo { get; set; }
         // Grouped by Section
         public List<ExamSectionDto> Sections { get; set; }
     }
@@ -39,20 +39,34 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
         public List<QuestionMediaDto> Medias { get; set; } // Multimedia
         public List<OptionDto> Options { get; set; }
     }
-
+    
     public class QuestionMediaDto
     {
         public Guid Id { get; set; }
-        public string Url { get; set; }
         public MediaType Type { get; set; }
         public string MimeType { get; set; }
     }
-
+    
     public class ResumeExamDto
     {
         public ExamPackageDto ExamPackage { get; set; }
         public List<StudentAnswerDto> SavedAnswers { get; set; }
         public DateTime ResumedAt { get; set; }
+    }
+    
+    public class StudentAnswerDto
+    {
+        public Guid QuestionId { get; set; }
+        public Guid? SelectedOptionId { get; set; }
+        public string? TextAnswer { get; set; }
+        public bool IsFlagged { get; set; }
+        public DateTime Timestamp { get; set; }
+    }
+    
+    public class DeliveredStudentInfoDto
+    {
+        public Guid StudentId { get; set; }
+        public string StudentName { get; set; }
     }
     ```
 
@@ -67,7 +81,7 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
         // Note: IsCorrect is deliberately EXCLUDED from this DTO.
         // Grading happens server-side or via encrypted blob not exposed here.
     }
-
+    
     public class ExamResultDto
     {
         public Guid StudentId { get; set; }
@@ -79,7 +93,7 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
     
     // Inputs
     public class StartInput { public string UnlockCode { get; set; } }
-
+    
     public class SubmitAnswerInput 
     { 
         public Guid QuestionId { get; set; } 
@@ -87,7 +101,7 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
         public Guid? SelectedOptionId { get; set; }
         public string? TextAnswer { get; set; }
     }
-
+    
     public class CreateScheduleInput 
     {
         public Guid ExamId { get; set; }
@@ -297,12 +311,20 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
 *   **`GetLocalExamsAsync()`** -> `List<DeliveredExamDto>`
     *   *UI:* "Download Status" list. Confirms readiness.
 
----
 
-## 4. Integration Events (RabbitMQ)
 
-### 4.1 `ExamPublishedEto` (Central -> Local)
+## 4. Shared Services
+
+### 4.1 `IAttachmentAppService`
+
+-  `GetAttachmentFileAsync(Guid id)` => `IRemoteStreamContent`
+
+
+
+## 5. Integration Events (RabbitMQ)
+
+### 5.1 `ExamPublishedEto` (Central -> Local)
 *   `ExamInstanceId`, `CenterId`, `DataVersion`, `DownloadUrl`, `Checksum`.
 
-### 4.2 `ExamSubmittedEto` (Local -> Central)
+### 5.2 `ExamSubmittedEto` (Local -> Central)
 *   `StudentId`, `ExamInstanceId`, `Answers` (List), `SubmittedAt`, `DeviceFingerprint`.
