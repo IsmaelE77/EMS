@@ -16,6 +16,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `Duration`: TimeSpan (e.g., 60 mins)
     *   `PassingScore`: Integer
     *   `Status`: Enum (Draft, Published, Archived)
+    *   `InstructorId`: Guid 
     *   `Sections`: Collection of `ExamSection` (Entity)
         *   `Title`: String (e.g., "Part A: Mathematics")
         *   `OrderIndex`: Int
@@ -82,6 +83,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `Name`: String (e.g., "Calculus 101")
     *   `Description`: String?
     *   `IsActive`: Bool
+    *   `InstructorId`: Guid (Reference to `Instructor.Id`)
 
 ### 1.6 Aggregate: `Question` (The Content)
 *   **Root Entity:** `Question`
@@ -92,6 +94,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `Difficulty`: Enum (Easy, Medium, Hard)
     *   `Tags`: List<String> (Metadata)
     *   `DefaultPoints`: Float
+    *   `InstructorId`: Guid (Reference to `Instructor.Id`)
     *   `Options`: List<Option> (Value Object)
         *   `Id`: Guid
         *   `Text`: String
@@ -177,6 +180,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
             *   `Type`: Enum (SingleChoice, MultipleChoice, Essay, Code)
             *   `Points`: Float
             *   `OrderIndex`: Int
+            *   `Tags`: List<String> (Metadata from Central)
             *   `CorrectOptionId`: Guid? (For MCQ - encrypted or secured)
             *   `CorrectAnswer`: String? (For Essay/Code - encrypted)
             *   `Options`: Collection of `DeliveredOption` (Value Object)
@@ -202,7 +206,8 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `StudentName`: String (Cached for offline display)
     *   `DeliveredExamId`: Guid
     *   `StartTime`: DateTime
-    *   `EndTime`: DateTime (Calculated: Start + Duration)
+    *   `EndTime`: DateTime (Calculated: Start + Duration + GrantedExtraTime)
+    *   `GrantedExtraTime`: TimeSpan? (Per-exam time extension granted by proctor)
     *   `LastHeartbeat`: DateTime (For connection monitoring)
     *   `LastSavedAt`: DateTime (Checkpoint)
     *   `SubmittedAt`: DateTime? (Actual submission time)
