@@ -452,7 +452,7 @@ Admin creates an Exam Center via the Dashboard:
 *   **Flow:**
     1.  **Login:** Student clicks "Login" on Local Server.
     2.  **Redirect:** Redirected to Central Server (OpenIddict) to authenticate (User/Pass/MFA).
-    3.  **Token Issue:** Central issues a signed **ID Token (JWT)** containing `sub` (StudentId) and `exam_id`.
+    3.  **Token Issue:** Central issues a signed **ID Token (JWT)** containing `sub` (StudentId).
     4.  **Callback:** Browser posts the JWT to Local Server.
     5.  **Offline Validation:**
         *   Local Server has the **Central Public Key** (cached during exam download).
