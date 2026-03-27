@@ -190,6 +190,60 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
 *   **`ProcessReviewAsync(Guid reviewId, ReviewDecisionInput)`**
     *   *UI:* "Appeals" dashboard. Input: Approve/Reject + Comment.
 
+### 2.8 `IStudentAppService` (Student Management)
+*   **`GetListAsync(GetStudentsInput)`** -> `PagedResultDto<StudentDto>`
+    *   *UI:* "Students" grid. Filters: Group, Name.
+    *   *Returns:* Student with linked user info (Name, Email from IdentityUser).
+*   **`GetAsync(Guid id)`** -> `StudentDetailDto`
+    *   *UI:* Student detail view.
+*   **`CreateAsync(CreateStudentInput)`**
+    *   *Input:* `UserId`, `GroupId?`
+    *   *UI:* "Add Student" modal. Select existing user and optionally assign to group.
+    *   *Validation:* User must not already be a Student or Instructor.
+*   **`UpdateAsync(Guid id, UpdateStudentInput)`**
+    *   *Input:* `GroupId?`
+    *   *UI:* "Edit Student" modal. Change group assignment.
+*   **`DeleteAsync(Guid id)`**
+    *   *UI:* "Remove Student" button. Removes student record (does not delete IdentityUser).
+*   **`AssignToGroupAsync(Guid studentId, Guid groupId)`**
+    *   *UI:* Bulk action or drag-drop to group.
+*   **`RemoveFromGroupAsync(Guid studentId)`**
+    *   *UI:* "Remove from Group" button.
+*   **`GetLookupAsync(GetStudentLookupInput)`** -> `List<StudentLookupDto>`
+    *   *UI:* Dropdown/autocomplete for selecting students (e.g., in ExamSchedule manual assignment).
+
+### 2.9 `IInstructorAppService` (Instructor Management)
+*   **`GetListAsync(GetInstructorsInput)`** -> `PagedResultDto<InstructorDto>`
+    *   *UI:* "Instructors" grid.
+    *   *Returns:* Instructor with linked user info (Name, Email from IdentityUser).
+*   **`GetAsync(Guid id)`** -> `InstructorDetailDto`
+    *   *UI:* Instructor detail view.
+*   **`CreateAsync(CreateInstructorInput)`**
+    *   *Input:* `UserId`
+    *   *UI:* "Add Instructor" modal. Select existing user.
+    *   *Validation:* User must not already be a Student or Instructor.
+*   **`DeleteAsync(Guid id)`**
+    *   *UI:* "Remove Instructor" button. Removes instructor record (does not delete IdentityUser).
+*   **`GetLookupAsync()`** -> `List<InstructorLookupDto>`
+    *   *UI:* Dropdown for selecting grader/reviewer.
+
+### 2.10 `IStudentGroupAppService` (Group Management)
+*   **`GetListAsync(GetGroupsInput)`** -> `PagedResultDto<StudentGroupDto>`
+    *   *UI:* "Student Groups" grid. Columns: Name, Faculty, Year, Student Count, Status.
+*   **`GetAsync(Guid id)`** -> `StudentGroupDetailDto`
+    *   *UI:* Group detail view with list of students.
+*   **`CreateAsync(CreateGroupInput)`**
+    *   *Input:* `Name`, `Faculty`, `Department`, `AcademicYear`
+    *   *UI:* "New Group" modal.
+*   **`UpdateAsync(Guid id, UpdateGroupInput)`**
+    *   *UI:* "Edit Group" modal.
+*   **`ToggleStatusAsync(Guid id)`**
+    *   *UI:* "Archive/Activate" button.
+*   **`GetStudentsAsync(Guid groupId)`** -> `List<StudentDto>`
+    *   *UI:* "View Students" in group detail.
+*   **`GetLookupAsync()`** -> `List<StudentGroupLookupDto>`
+    *   *UI:* Dropdown for selecting group (e.g., in ExamSchedule assignment strategy).
+
 ---
 
 ## 3. Local Server APIs (`MyProject.ExamExecution`)

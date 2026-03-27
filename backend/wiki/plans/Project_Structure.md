@@ -23,30 +23,50 @@
 │   │   │   ├── Question.cs
 │   │   │   └── IQuestionRepository.cs
 │   │   │
-│   │   └── /Scheduling                            <-- Aggregate Folder
-│   │       ├── ExamSchedule.cs
-│   │       ├── AssignmentType.cs                  <-- Enum (Group, Course, Manual)
-│   │       ├── ExamScheduleManager.cs
-│   │       └── IExamScheduleRepository.cs
-│   │
+│   │   ├── /Scheduling                            <-- Aggregate Folder
+│   │   │   ├── ExamSchedule.cs
+│   │   │   ├── AssignmentStrategy.cs              <-- Value Object (ByGroup, ByManualList)
+│   │   │   ├── ExamScheduleManager.cs
+│   │   │   └── IExamScheduleRepository.cs
+│   │   │
 │   │   ├── /ExamResults                           <-- Aggregate Folder
 │   │   │   ├── ExamResult.cs                      <-- Root (Student + Score + Status)
-│   │   │   ├── QuestionResult.cs                  <-- Entity (QuestionId + GivenAnswer + Score)
-│   │   │   ├── ExamReview.cs                      <-- Root (Appeal Request)
+│   │   │   ├── QuestionGrade.cs                   <-- Entity (QuestionId + Score)
+│   │   │   ├── ExamReview.cs                      <-- Entity (Appeal Request)
 │   │   │   ├── GradingService.cs                  <-- Domain Service (Auto-Grading Logic)
 │   │   │   └── IExamResultRepository.cs
 │   │   │
-│   │   └── /ExamCenters                           <-- Aggregate Folder
-│   │       ├── ExamCenter.cs                      <-- Root (Capacity + LinkedClientId)
-│   │       ├── CapacityManager.cs                 <-- Domain Service (Overbooking Prevention)
-│   │       └── IExamCenterRepository.cs
+│   │   ├── /ExamCenters                           <-- Aggregate Folder
+│   │   │   ├── ExamCenter.cs                      <-- Root (Capacity + LinkedClientId)
+│   │   │   ├── CapacityManager.cs                 <-- Domain Service (Overbooking Prevention)
+│   │   │   └── IExamCenterRepository.cs
+│   │   │
+│   │   ├── /Students                              <-- Aggregate Folder
+│   │   │   ├── Student.cs                         <-- Root (Links to IdentityUser)
+│   │   │   ├── StudentManager.cs                  <-- Domain Service
+│   │   │   └── IStudentRepository.cs
+│   │   │
+│   │   ├── /Instructors                           <-- Aggregate Folder
+│   │   │   ├── Instructor.cs                      <-- Root (Links to IdentityUser)
+│   │   │   ├── InstructorManager.cs               <-- Domain Service
+│   │   │   └── IInstructorRepository.cs
+│   │   │
+│   │   └── /StudentGroups                         <-- Aggregate Folder
+│   │       ├── StudentGroup.cs                    <-- Root (Cohort for batch assignment)
+│   │       └── IStudentGroupRepository.cs
 │   │
 │   ├── /MyProject.ExamManagement.Application      <-- Use Cases
 │   │   ├── /Exams
 │   │   │   ├── ExamDefinitionAppService.cs
 │   │   │   └── ExamInstanceAppService.cs
-│   │   └── /Scheduling
-│   │       └── ExamScheduleAppService.cs
+│   │   ├── /Scheduling
+│   │   │   └── ExamScheduleAppService.cs
+│   │   ├── /Students
+│   │   │   └── StudentAppService.cs
+│   │   ├── /Instructors
+│   │   │   └── InstructorAppService.cs
+│   │   └── /StudentGroups
+│   │       └── StudentGroupAppService.cs
 │   │
 │   ├── /MyProject.ExamManagement.EntityFrameworkCore
 │   │   └── ExamManagementDbContext.cs             <-- PostgreSQL Config

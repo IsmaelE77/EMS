@@ -71,9 +71,9 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `EndTime`: DateTime
     *   `Status`: Enum (Draft, Published, Closed)
     *   `AssignmentStrategy`: `AssignmentStrategy` (Value Object)
-        *   `Type`: Enum (ByGroup, ByCourse, ByManualList)
-        *   `ReferenceId`: String (Group/Course ID)
-        *   `ExplicitStudentIds`: List<Guid>
+        *   `Type`: Enum (ByGroup, ByManualList)
+        *   `GroupId`: Guid? (Reference to `StudentGroup.Id` when Type=ByGroup)
+        *   `ExplicitStudentIds`: List<Guid> (References to `Student.Id` when Type=ByManualList)
 *   **Invariant:** Total assigned students (via Strategy) + existing overlap < `ExamCenter.UsableSeats`.
 
 ### 1.5 Aggregate: `QuestionPool` (The Bank)
@@ -108,7 +108,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
 ### 1.7 Aggregate: `ExamResult` (The Grade)
 *   **Root Entity:** `ExamResult`
     *   `Id`: Guid
-    *   `StudentId`: Guid
+    *   `StudentId`: Guid (Reference to `Student.Id`)
     *   `ExamInstanceId`: Guid
     *   `TotalScore`: Float
     *   `Status`: Enum (PendingGrading, Graded, Published)
@@ -116,7 +116,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
     *   `SubmittedAt`: DateTime (Audit)
     *   `GradedAt`: DateTime?
     *   `PublishedAt`: DateTime?
-    *   `GradedBy`: Guid? (UserId of instructor)
+    *   `GradedById`: Guid? (Reference to `Instructor.Id`)
     *   `QuestionGrades`: Collection of `QuestionGrade` (Entity)
         *   `QuestionId`: Guid
         *   `Score`: Float
@@ -124,11 +124,36 @@ This document serves as the authoritative source for the **Domain Layer**. It de
 *   **Entity:** `ExamReview` (The Appeal)
     *   `Id`: Guid
     *   `ExamResultId`: Guid
-    *   `StudentId`: Guid
+    *   `StudentId`: Guid (Reference to `Student.Id`)
     *   `Reason`: String
     *   `Status`: Enum (Pending, Approved, Rejected)
-    *   `InstructorResponse`: String
+    *   `InstructorResponse`: String?
+    *   `ResolvedById`: Guid? (Reference to `Instructor.Id`)
     *   `ResolvedAt`: DateTime?
+
+### 1.8 Aggregate: `Student` (The Examinee)
+*   **Root Entity:** `Student`
+    *   `Id`: Guid
+    *   `UserId`: Guid (Link to ABP `IdentityUser.Id` - Unique)
+    *   `GroupId`: Guid? (Reference to `StudentGroup.Id`)
+*   **Invariant:** `UserId` must be unique (one user cannot be multiple students).
+
+### 1.9 Aggregate: `Instructor` (The Examiner)
+*   **Root Entity:** `Instructor`
+    *   `Id`: Guid
+    *   `UserId`: Guid (Link to ABP `IdentityUser.Id` - Unique)
+*   **Invariant 1:** `UserId` must be unique (one user cannot be multiple instructors).
+*   **Invariant 2:** `UserId` cannot exist in `Student.UserId` (mutual exclusion).
+
+### 1.10 Aggregate: `StudentGroup` (The Cohort)
+*   **Root Entity:** `StudentGroup`
+    *   `Id`: Guid
+    *   `Name`: String (Unique, e.g., "CS-2024-A")
+    *   `Faculty`: String
+    *   `Department`: String
+    *   `AcademicYear`: Int (e.g., 2024)
+    *   `IsActive`: Bool
+*   **Usage:** Used by `ExamSchedule.AssignmentStrategy` to assign all students in a group to an exam.
 
 ---
 
@@ -147,7 +172,8 @@ This document serves as the authoritative source for the **Domain Layer**. It de
 ### 2.2 Aggregate: `ExamSession` (The Attempt)
 *   **Root Entity:** `ExamSession`
     *   `Id`: Guid
-    *   `StudentId`: Guid
+    *   `StudentId`: Guid (Reference to Central `Student.Id`)
+    *   `StudentName`: String (Cached for offline display)
     *   `DeliveredExamId`: Guid
     *   `StartTime`: DateTime
     *   `EndTime`: DateTime (Calculated: Start + Duration)
@@ -199,18 +225,67 @@ This document serves as the authoritative source for the **Domain Layer**. It de
 *   `ExamStatus`: Draft, Published, Archived
 *   `GradingStatus`: Pending, Graded, Published
 *   `ReviewStatus`: Pending, Approved, Rejected
+*   `AssignmentType`: ByGroup, ByManualList
 
 ### 3.2 Value Objects (DTOs in Shared)
 *   `ExamPackageDto`: The data contract for the JSON blob.
 *   `StudentAnswerDto`: The data contract for the submission.
+*   `StudentInfoDto`: Minimal student data synced to ExamExecution (Id, Name).
 
 ---
 
-## 4. Entity Relationship Diagram (Mermaid)
+## 4. Roles & Identity
+
+### 4.1 ABP Identity (Inside ExamManagement)
+The system uses ABP's built-in Identity module for authentication.
+
+### 4.2 Roles
+| Role | Context | Permissions |
+|------|---------|-------------|
+| `Admin` | ExamManagement | Full system access |
+| `Instructor` | ExamManagement | Author exams, grade, manage questions |
+| `Student` | ExamManagement | View schedules, view results, submit reviews |
+| `Proctor` | ExamExecution | Supervise exam sessions, manage room |
+
+### 4.3 Entity-User Linking
+*   `Student.UserId` → `IdentityUser.Id` (1:1, mutually exclusive with Instructor)
+*   `Instructor.UserId` → `IdentityUser.Id` (1:1, mutually exclusive with Student)
+*   A user **cannot** be both Student and Instructor.
+
+---
+
+## 5. Entity Relationship Diagram (Mermaid)
 
 ```mermaid
 classDiagram
-    %% Central Context
+    %% Identity
+    class IdentityUser {
+        +Guid Id
+        +String UserName
+        +String Email
+    }
+
+    %% Central Context - Users
+    class Student {
+        +Guid Id
+        +Guid UserId
+        +Guid? GroupId
+    }
+    class Instructor {
+        +Guid Id
+        +Guid UserId
+    }
+    class StudentGroup {
+        +Guid Id
+        +String Name
+        +String Faculty
+        +Int AcademicYear
+    }
+    Student --> IdentityUser : UserId
+    Instructor --> IdentityUser : UserId
+    Student --> StudentGroup : GroupId
+
+    %% Central Context - Exams
     class ExamDefinition {
         +Guid Id
         +String Title
@@ -253,11 +328,14 @@ classDiagram
     }
     class AssignmentStrategy {
         +Enum Type
-        +String ReferenceId
+        +Guid? GroupId
+        +List~Guid~ ExplicitStudentIds
     }
     ExamSchedule *-- AssignmentStrategy
     ExamSchedule --> ExamInstance : schedules
     ExamSchedule --> ExamCenter : located at
+    AssignmentStrategy --> StudentGroup : ByGroup
+    AssignmentStrategy --> Student : ByManualList
 
     class QuestionPool {
         +Guid Id
@@ -277,6 +355,7 @@ classDiagram
         +Guid ExamInstanceId
         +Float TotalScore
         +Enum Status
+        +Guid? GradedById
     }
     class ExamReview {
         +Guid Id
@@ -286,6 +365,8 @@ classDiagram
     }
     ExamResult "1" *-- "0..1" ExamReview
     ExamResult --> ExamInstance : grades
+    ExamResult --> Student : StudentId
+    ExamResult --> Instructor : GradedById
 
     %% Local Context
     class DeliveredExam {
@@ -298,6 +379,7 @@ classDiagram
     class ExamSession {
         +Guid Id
         +Guid StudentId
+        +String StudentName
         +Guid DeliveredExamId
         +DateTime StartTime
         +DateTime EndTime
