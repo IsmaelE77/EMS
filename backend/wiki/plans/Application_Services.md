@@ -114,6 +114,236 @@ This document defines the **Application Layer** (Use Cases) for the Distributed 
     }
     ```
 
+### 1.3 Additional DTO Declarations Referenced by Service Contracts
+*   **Purpose:** Ensure every `*Dto` used by service signatures in this document has an explicit declaration.
+*   **Structure:**
+    ```csharp
+    public class ExamDefinitionDto
+    {
+        public Guid Id { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public Status Status { get; set; }
+        public Type Type { get; set; }
+        public DateTime CreationTime { get; set; }
+        public TimeSpan Duration { get; set; }
+        public int PassingScore { get; set; }
+        public Guid InstructorId { get; set; }
+        public string InstructorName { get; set; }
+        
+    }
+    
+    public class ExamDefinitionDetailDto : ExamDefinitionDto
+    {
+        public List<ExamSectionDto> Sections { get; set; }
+        public List<RandomizationRuleDto> RandomizationRules { get; set; }
+    }
+    
+    public class RandomizationRuleDto 
+    {
+        public Guid SectionId { get; set; }
+        public Guid PoolId { get; set; }
+        public string SectionName { get; set; }
+        public string PoolName { get; set; }
+        public int Count { get; set; }
+        public decimal PointsPerQuestion { get; set; }
+    }
+    
+    public class QuestionPoolDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public bool IsActive { get; set; }
+        public string Description { get; set; }
+        public Guid InstructorId { get; set; }
+        public string InstructorName { get; set; }
+    }
+    
+    public class ExamScheduleDto
+    {
+        public Guid Id { get; set; }
+        public Guid ExamInstanceId { get; set; }
+        public Guid ExamCenterId { get; set; }
+        public string ExamTitle { get; set; }
+        public ExamType Type { get; set; }
+        public int ExamPassingScore { get; set; }
+        public Guid ExamInstructorId { get; set; }
+        public string ExamInstructorName { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public string Status { get; set; }
+        public AssignmentStrategyDto AssignmentStrategy { get; set; }
+    }
+    
+    public class ExamCenterDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public int TotalSeats { get; set; }
+        public int UsableSeats { get; set; }
+        public string Status { get; set; }
+    }
+    
+    public class ExamCenterSecretDto
+    {
+        public Guid CenterId { get; set; }
+        public string ClientId { get; set; }
+        public string ClientSecret { get; set; }
+    }
+    
+    public class ExamResultListDto
+    {
+        public Guid Id { get; set; }
+        public Guid ExamInstanceId { get; set; }
+        public ExamType Type { get; set; }
+        public Guid ExamInstructorId { get; set; }
+        public string ExamInstructorName { get; set; }
+        public Guid StudentId { get; set; }
+        public string Status { get; set; }
+        public double? TotalScore { get; set; }
+    }
+    
+    public class ExamResultDetailDto : ExamResultListDto
+    {
+        public DateTime StartedAt { get; set; }
+        public DateTime SubmittedAt { get; set; }
+        public DateTime GradedAt { get; set; }
+        public DateTime PublishedAt { get; set; }
+        public List<StudentAnswerDto> Answers { get; set; }
+        public List<QuestionGradeDto> QuestionGrades { get; set; }
+    }
+    
+    public class QuestionGradeDto 
+    {
+        public Guid QuestionId { get; set; }
+        public decimal Score { get; set; }
+        public string Comments { get; set; }
+    }
+    
+    public class ExamReviewDto
+    {
+        public Guid Id { get; set; }
+        public Guid ResultId { get; set; }
+        public Status Status { get; set; }
+        public string? ReviewerComment { get; set; }
+    }
+    
+    public class StudentDto
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public Guid? GroupId { get; set; }
+    }
+    
+    public class StudentDetailDto : StudentDto
+    {
+        public string? GroupName { get; set; }
+    }
+    
+    public class StudentLookupDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+    
+    public class InstructorDto
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public string Name { get; set; }
+        public string Email { get; set; }
+    }
+    
+    public class InstructorDetailDto : InstructorDto
+    {
+    }
+    
+    public class InstructorLookupDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+    
+    public class StudentGroupDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public string Faculty { get; set; }
+        public string Department { get; set; }
+        public string AcademicYear { get; set; }
+        public int StudentCount { get; set; }
+        public bool IsActive { get; set; }
+    }
+    
+    public class StudentGroupDetailDto : StudentGroupDto
+    {
+        // pagination
+        public List<StudentDto> Students { get; set; }
+    }
+    
+    public class StudentGroupLookupDto
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+    }
+    
+    public class ExamSessionDto
+    {
+        public Guid SessionId { get; set; }
+        public Guid ExamInstanceId { get; set; }
+        public Guid StudentId { get; set; }
+        public string Status { get; set; }
+        public DateTime? LastHeartbeat { get; set; }
+    }
+    
+    public class ProctorDashboardDto
+    {
+        public int TotalStudents { get; set; }
+        public int ActiveStudents { get; set; }
+        public int SubmittedStudents { get; set; }
+        public int OfflineAlerts { get; set; }
+    }
+    
+    public class StudentSessionDto
+    {
+        public Guid SessionId { get; set; }
+        public Guid StudentId { get; set; }
+        public string StudentName { get; set; }
+        public string Status { get; set; }
+        public int AnsweredCount { get; set; }
+        public int TotalQuestions { get; set; }
+        public TimeSpan TimeRemaining { get; set; }
+    }
+    
+    public class ExamCenterSessionDto
+    {
+        public Guid Id { get; set; }
+        public Guid ExamInstanceId { get; set; }
+        public string ExamTitle { get; set; }
+        public DateTime ScheduledStartTime { get; set; }
+        public DateTime ScheduledEndTime { get; set; }
+    }
+    
+    public class SyncRecordDto
+    {
+        public Guid Id { get; set; }
+        public string Direction { get; set; } // Upload / Download
+        public string Status { get; set; } // Pending / Success / Failed
+        public DateTime? LastAttemptAt { get; set; }
+        public string? ErrorMessage { get; set; }
+    }
+    
+    public class DeliveredExamDto
+    {
+        public Guid ExamInstanceId { get; set; }
+        public string Title { get; set; }
+        public int DataVersion { get; set; }
+        public DateTime DownloadedAt { get; set; }
+    }
+    ```
+
 ---
 
 ## 2. Central Server APIs (`MyProject.ExamManagement`)
