@@ -22,7 +22,7 @@ This document serves as the authoritative source for the **Domain Layer**. It de
         *   `OrderIndex`: Int
         *   `Description`: String?
     *   `RandomizationRules`: Collection of `RandomizationRule` (Value Object)
-        *   `SectionName`: String (Target Section)
+        *   `SectionId`: String (Target Section)
         *   `PoolId`: Guid
         *   `Count`: Int (e.g., "Pick 5 from Algebra")
         *   `PointsPerQuestion`: Float (Default score for questions from this rule)
