@@ -83,8 +83,13 @@
 ├── /src
 │   ├── /MyProject.ExamExecution.Domain
 │   │   ├── /DeliveredExams                        <-- Aggregate Folder
-│   │   │   ├── DeliveredExam.cs                   <-- Read-Only Root
-│   │   │   ├── ExamSyncManager.cs                 <-- Domain Service (Downloads JSON)
+│   │   │   ├── DeliveredExam.cs                   <-- Root (Synced Exam Package)
+│   │   │   ├── DeliveredSection.cs                <-- Entity
+│   │   │   ├── DeliveredQuestion.cs               <-- Entity
+│   │   │   ├── DeliveredOption.cs                 <-- Value Object
+│   │   │   ├── DeliveredMedia.cs                  <-- Value Object
+│   │   │   ├── DeliveredStudentInfo.cs            <-- Value Object (Allowed Students)
+│   │   │   ├── ExamSyncManager.cs                 <-- Domain Service (Syncs from Central)
 │   │   │   └── IDeliveredExamRepository.cs
 │   │   │
 │   │   ├── /ExamSessions                          <-- Aggregate Folder

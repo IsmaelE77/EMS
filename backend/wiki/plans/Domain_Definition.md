@@ -160,14 +160,40 @@ This document serves as the authoritative source for the **Domain Layer**. It de
 ## 2. Bounded Context: Local Server (`MyProject.ExamExecution`)
 **Responsibility:** Delivery, Reliability, Security, Monitoring.
 
-### 2.1 Aggregate: `DeliveredExam` (Read-Only Cache)
+### 2.1 Aggregate: `DeliveredExam` (Synced Exam Package)
 *   **Root Entity:** `DeliveredExam`
     *   `Id`: Guid (Matches Central `ExamInstanceId`)
     *   `Title`: String
     *   `Duration`: TimeSpan
     *   `DataVersion`: Integer
-    *   `JsonContent`: Blob (The full exam package for offline delivery)
+    *   `PassingScore`: Integer?
+    *   `Sections`: Collection of `DeliveredSection` (Entity)
+        *   `Id`: Guid
+        *   `Title`: String
+        *   `OrderIndex`: Int
+        *   `Questions`: Collection of `DeliveredQuestion` (Entity)
+            *   `Id`: Guid (Original QuestionId from Central)
+            *   `Text`: String
+            *   `Type`: Enum (SingleChoice, MultipleChoice, Essay, Code)
+            *   `Points`: Float
+            *   `OrderIndex`: Int
+            *   `CorrectOptionId`: Guid? (For MCQ - encrypted or secured)
+            *   `CorrectAnswer`: String? (For Essay/Code - encrypted)
+            *   `Options`: Collection of `DeliveredOption` (Value Object)
+                *   `Id`: Guid
+                *   `Text`: String
+                *   `OrderIndex`: Int
+            *   `Medias`: Collection of `DeliveredMedia` (Value Object)
+                *   `Id`: Guid
+                *   `LocalPath`: String (Cached file path)
+                *   `Type`: Enum (Image, Audio, Video, CodeSnippet)
+                *   `MimeType`: String
+    *   `AllowedStudents`: Collection of `DeliveredStudentInfo` (Value Object)
+        *   `StudentId`: Guid (Reference to Central `Student.Id`)
+        *   `StudentName`: String
+        *   `DefaultExtraTime`: TimeSpan?
 *   **Invariant:** Immutable. Updates arrive as new `DeliveredExam` with higher `DataVersion`.
+*   **Authorization:** Only students in `AllowedStudents` can start an `ExamSession`.
 
 ### 2.2 Aggregate: `ExamSession` (The Attempt)
 *   **Root Entity:** `ExamSession`
@@ -226,11 +252,11 @@ This document serves as the authoritative source for the **Domain Layer**. It de
 *   `GradingStatus`: Pending, Graded, Published
 *   `ReviewStatus`: Pending, Approved, Rejected
 *   `AssignmentType`: ByGroup, ByManualList
+*   `MediaType`: Image, Audio, Video, CodeSnippet
 
 ### 3.2 Value Objects (DTOs in Shared)
-*   `ExamPackageDto`: The data contract for the JSON blob.
-*   `StudentAnswerDto`: The data contract for the submission.
-*   `StudentInfoDto`: Minimal student data synced to ExamExecution (Id, Name).
+*   `StudentAnswerDto`: The data contract for answer submission.
+*   `DeliveredStudentInfoDto`: Student data synced to ExamExecution (StudentId, Name, DefaultExtraTime).
 
 ---
 
@@ -372,9 +398,36 @@ classDiagram
     class DeliveredExam {
         +Guid Id
         +String Title
+        +TimeSpan Duration
         +Int DataVersion
-        +Blob JsonContent
+        +Float MaxScore
     }
+    class DeliveredSection {
+        +Guid Id
+        +String Title
+        +Int OrderIndex
+    }
+    class DeliveredQuestion {
+        +Guid Id
+        +String Text
+        +Enum Type
+        +Float Points
+        +Int OrderIndex
+    }
+    class DeliveredOption {
+        +Guid Id
+        +String Text
+        +Int OrderIndex
+    }
+    class DeliveredStudentInfo {
+        +Guid StudentId
+        +String StudentName
+        +TimeSpan? DefaultExtraTime
+    }
+    DeliveredExam "1" *-- "*" DeliveredSection
+    DeliveredExam "1" *-- "*" DeliveredStudentInfo
+    DeliveredSection "1" *-- "*" DeliveredQuestion
+    DeliveredQuestion "1" *-- "*" DeliveredOption
 
     class ExamSession {
         +Guid Id
@@ -383,6 +436,7 @@ classDiagram
         +Guid DeliveredExamId
         +DateTime StartTime
         +DateTime EndTime
+        +TimeSpan? GrantedExtraTime
         +Enum Status
     }
     class StudentAnswer {
