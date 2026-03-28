@@ -151,7 +151,7 @@ We use a **"Notify-then-Download"** pattern to handle large exam files efficient
             *   **Memory Efficiency:** ABP Proxies load the entire response into RAM (JSON deserialization). For a 500MB video file, this would crash the Local Server. `GetStreamAsync` uses a constant small buffer (e.g., 8KB).
             *   **Socket Management:** `IHttpClientFactory` manages the underlying `HttpMessageHandler` lifetimes, preventing "Socket Exhaustion" (running out of ports) and DNS staleness.
             *   **Resilience:** We wrap this in a `Polly` retry policy (e.g., "Retry 3 times with exponential backoff") to handle transient network blips.
-            *   **Reference:** [Microsoft Docs: Use IHttpClientFactory to implement resilient HTTP requests](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests)
+            *   **Reference:** [Microsoft Docs: Use IHttpClientFactory to implement resilient HTTP requests](https://learn.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests) [ABP Application service working with Streams](https://abp.io/docs/4.3/Application-Services#working-with-streams)
 4.  **Ingest:** Local Server saves the package to **Blob Storage** (FileSystem) and imports metadata to db.
 
 ### Direction: Local -> Central (Results)
