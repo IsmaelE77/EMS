@@ -12,9 +12,11 @@
     <ProjectReference Include="..\..\Ems.ExamExecution\src\Ems.ExamExecution.DbMigrator\Ems.ExamExecution.DbMigrator.csproj" />
     <ProjectReference Include="..\..\Ems.ExamExecution\src\Ems.ExamExecution.HttpApi.Host\Ems.ExamExecution.HttpApi.Host.csproj" />
     <ProjectReference Include="..\..\Ems.ExamManagement\src\Ems.ExamManagement.DbMigrator\Ems.ExamManagement.DbMigrator.csproj" />
+    <ProjectReference Include="..\..\Ems.ExamManagement\src\Ems.ExamManagement.HttpApi.Host\Ems.ExamManagement.HttpApi.Host.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="13.2.0" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.2.0" />
   </ItemGroup>
 

@@ -2,6 +2,8 @@ using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
+builder.AddAzureContainerAppEnvironment("aspire-env");
+
 var postgres = builder.AddPostgres("examManagementPostgres")
     .WithImage("postgres:15.15-trixie")
     .WithDataVolume("ems-postgres");
@@ -15,13 +17,14 @@ var examManagementMigrator = builder
     .WaitFor(examManagementDb)
     .WithReplicas(1);
 
-var examManagementHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("examManagementHostApi")
+var examManagementHost = builder.AddProject<Ems_ExamManagement_HttpApi_Host>("examManagementHostApi")
+    .WithExternalHttpEndpoints()
     .WaitForCompletion(examManagementMigrator)
     .WithHttpHealthCheck()
     .WithReference(examManagementDb, "Default");
 
 var examExecutionDb = postgres
-    .AddDatabase("ExamExecution");
+    .AddDatabase("examExecutionDb");
 
 var examExecutionMigrator =builder
     .AddProject<Ems_ExamExecution_DbMigrator>("examExecutionDbMigrator")
@@ -30,6 +33,7 @@ var examExecutionMigrator =builder
     .WithReplicas(1);
 
 var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("examExecutionHostApi")
+    .WithExternalHttpEndpoints()
     .WaitForCompletion(examExecutionMigrator)
     .WithHttpHealthCheck()
     .WithReference(examExecutionDb, "Default");
