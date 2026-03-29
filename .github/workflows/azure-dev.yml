@@ -36,6 +36,24 @@ jobs:
             9.x
             10.x
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install Yarn
+        run: npm install -g yarn
+
+      - name: Install NPM dependencies
+        run: yarn install
+
+      - name: Install ABP CLI
+        run: dotnet tool install -g Volo.Abp.Cli
+
+      - name: Install ABP Libs
+        run: abp install-libs
+        shell: bash
+
       - name: Log in with Azure (Federated Credentials)
         run: |
           azd auth login `
@@ -56,4 +74,3 @@ jobs:
         env:
           AZURE_USERNAME: ${{ secrets.AZURE_USERNAME }}
           AZURE_PASSWORD: ${{ secrets.AZURE_PASSWORD }}
-        
