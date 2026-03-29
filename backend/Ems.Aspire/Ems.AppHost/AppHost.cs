@@ -4,9 +4,17 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 builder.AddAzureContainerAppEnvironment("aspire-env");
 
-var postgres = builder.AddPostgres("examManagementPostgres")
-    .WithImage("postgres:15.15-trixie")
-    .WithDataVolume("ems-postgres");
+var username = builder.AddParameter("username", secret: true);
+var password = builder.AddParameter("password", secret: true);
+
+var postgres = builder
+    .AddAzurePostgresFlexibleServer("ems-postgres")
+    .WithPasswordAuthentication(username, password)
+    .RunAsContainer(x =>
+        x.WithImage("postgres:15.15-trixie")
+            .WithDataVolume("ems-postgres")
+            .WithPgAdmin()
+    );
 
 var examManagementDb = postgres
     .AddDatabase("examManagementDb");
