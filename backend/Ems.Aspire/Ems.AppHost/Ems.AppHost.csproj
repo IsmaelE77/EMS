@@ -18,7 +18,11 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Azure.AppContainers" Version="13.2.0" />
     <PackageReference Include="Aspire.Hosting.Azure.PostgreSQL" Version="13.2.0" />
+    <PackageReference Include="Aspire.Hosting.JavaScript" Version="13.2.0" />
     <PackageReference Include="Aspire.Hosting.PostgreSQL" Version="13.2.0" />
   </ItemGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Ems.ServiceDefaults\Ems.ServiceDefaults.csproj" IsAspireProjectResource="false" />
+    </ItemGroup>
 </Project>
