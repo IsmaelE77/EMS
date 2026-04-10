@@ -29,30 +29,30 @@ static void SetupProduction(
         .CreateDatabaseServer(ServiceNames.DatabaseServer, username, password, ContainerLifetime.Persistent);
 
     var examManagementDb = postgres
-        .AddDatabase("examManagementDb");
+        .AddDatabase(ServiceNames.ExamManagementDatabase);
 
     var examManagementMigrator = builder
-        .AddProject<Ems_ExamManagement_DbMigrator>("examManagementDbMigrator")
+        .AddProject<Ems_ExamManagement_DbMigrator>(ServiceNames.ExamManagementDatabaseMigrator)
         .WithReference(examManagementDb, "Default")
         .WaitFor(examManagementDb)
         .WithReplicas(1);
 
-    var examManagementHost = builder.AddProject<Ems_ExamManagement_HttpApi_Host>("examManagementHostApi")
+    var examManagementHost = builder.AddProject<Ems_ExamManagement_HttpApi_Host>(ServiceNames.ExamManagementServer)
         .WithExternalHttpEndpoints()
         .WaitForCompletion(examManagementMigrator)
         .WithHttpHealthCheck()
         .WithReference(examManagementDb, "Default");
 
     var examExecutionDb = postgres
-        .AddDatabase("examExecutionDb");
+        .AddDatabase(ServiceNames.ExamExecutionDatabase);
 
     var examExecutionMigrator =builder
-        .AddProject<Ems_ExamExecution_DbMigrator>("examExecutionDbMigrator")
+        .AddProject<Ems_ExamExecution_DbMigrator>(ServiceNames.ExamExecutionDatabaseMigrator)
         .WithReference(examExecutionDb, "Default")
         .WaitFor(examExecutionDb)
         .WithReplicas(1);
 
-    var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("examExecutionHostApi")
+    var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>(ServiceNames.ExamExecutionDatabase)
         .WithExternalHttpEndpoints()
         .WaitForCompletion(examExecutionMigrator)
         .WithHttpHealthCheck()
