@@ -26,7 +26,7 @@ static void SetupProduction(
     IResourceBuilder<ParameterResource> password)
 {
     var postgres = builder
-        .CreateDatabaseServer(ServiceNames.DatabaseServer, username, password, ContainerLifetime.Persistent);
+        .CreateDatabaseServer(ServiceNames.DatabaseServer, username, password);
 
     var examManagementDb = postgres
         .AddDatabase(ServiceNames.ExamManagementDatabase);
