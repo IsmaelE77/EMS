@@ -1,5 +1,7 @@
 using Ems.AppHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Projects;
 
 var builder = DistributedApplication.CreateBuilder(args);
 
@@ -9,24 +11,53 @@ var username = builder.AddParameter("username", secret: true);
 var password = builder.AddParameter("password", secret: true);
 
 
-// You can switch to the desired setup.
-
-//SetupDevelopment(builder, username, password, ContainerLifetime.Session, localCentresCount: 1);
-SetupProduction(builder, username, password, ContainerLifetime.Session, localCentresCount: 1);
-
-
-// if (builder.Environment.IsDevelopment())
-// {
-//     SetupDevelopment(builder, username, password);
-// }
-// else
-// {
-//     SetupProduction(builder, username, password);
-// }
-
+if (builder.Configuration.GetValue<bool>("ExperimentalMode"))
+     SetupDevelopment(builder, username, password);
+else
+    SetupProduction(builder, username, password);
 
 builder.Build().Run();
 return;
+
+
+static void SetupProduction(
+    IDistributedApplicationBuilder builder,
+    IResourceBuilder<ParameterResource> username,
+    IResourceBuilder<ParameterResource> password)
+{
+    var postgres = builder
+        .CreateDatabaseServer(ServiceNames.DatabaseServer, username, password, ContainerLifetime.Persistent);
+
+    var examManagementDb = postgres
+        .AddDatabase("examManagementDb");
+
+    var examManagementMigrator = builder
+        .AddProject<Ems_ExamManagement_DbMigrator>("examManagementDbMigrator")
+        .WithReference(examManagementDb, "Default")
+        .WaitFor(examManagementDb)
+        .WithReplicas(1);
+
+    var examManagementHost = builder.AddProject<Ems_ExamManagement_HttpApi_Host>("examManagementHostApi")
+        .WithExternalHttpEndpoints()
+        .WaitForCompletion(examManagementMigrator)
+        .WithHttpHealthCheck()
+        .WithReference(examManagementDb, "Default");
+
+    var examExecutionDb = postgres
+        .AddDatabase("examExecutionDb");
+
+    var examExecutionMigrator =builder
+        .AddProject<Ems_ExamExecution_DbMigrator>("examExecutionDbMigrator")
+        .WithReference(examExecutionDb, "Default")
+        .WaitFor(examExecutionDb)
+        .WithReplicas(1);
+
+    var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>("examExecutionHostApi")
+        .WithExternalHttpEndpoints()
+        .WaitForCompletion(examExecutionMigrator)
+        .WithHttpHealthCheck()
+        .WithReference(examExecutionDb, "Default");
+}
 
 
 
@@ -46,30 +77,6 @@ static void SetupDevelopment(
         var nodeName = $"ExamCentre{i + 1}";
         builder.AddExamExecutionNode(nodeName, examManagementHost, containerLifetime: containerLifetime);
     }
-    
+
     //TODO SetUp One PgAdmin and connect to all the servers.
 }
-
-static void SetupProduction(
-    IDistributedApplicationBuilder builder,
-    IResourceBuilder<ParameterResource> username,
-    IResourceBuilder<ParameterResource> password,
-    ContainerLifetime containerLifetime = ContainerLifetime.Session,
-    int localCentresCount = 2
-)
-{
-    // Create a single shared Postgres server for development,
-    // instead of one per node as in production (Real world scenario),
-    // to save resources and simplify publication.
-    var postgres = builder
-        .CreateDatabaseServer(ServiceNames.DatabaseServer, username, password, containerLifetime);
-
-    var examManagementHost = builder.CreateExamManagementHostNode(postgres);
-
-    for (var i = 0; i < localCentresCount; i++)
-    {
-        builder.AddExamExecutionNode($"ExamCentre{i + 1}", postgres, examManagementHost);
-    }
-}
-
-
