@@ -52,7 +52,7 @@ static void SetupProduction(
         .WaitFor(examExecutionDb)
         .WithReplicas(1);
 
-    var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>(ServiceNames.ExamExecutionDatabase)
+    var examExecutionHost = builder.AddProject<Ems_ExamExecution_HttpApi_Host>(ServiceNames.ExamExecutionServer)
         .WithExternalHttpEndpoints()
         .WaitForCompletion(examExecutionMigrator)
         .WithHttpHealthCheck()
