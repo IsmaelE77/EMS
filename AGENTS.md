@@ -2,6 +2,24 @@
 
 Compact guidance for OpenCode sessions working in this repo. Every line is something an agent would likely get wrong without it.
 
+## What this project is
+
+EMS (Distributed Examination System) is a digital exam platform for universities where exams run in **physical exam centers** with potentially unstable internet. It uses a **local-first distributed architecture**: each exam center has its own local server (UI, answer storage, session management, result sync), while a central server handles authoring, scheduling, and grading. Authoritative design docs live in `backend/wiki/plans/` (`Distributed Examination System.md`, `Domain_Definition.md`, `Application_Services.md`, `Project_Structure.md`).
+
+The two bounded contexts map directly to this split:
+- **`Ems.ExamManagement`** — the **central server**: authoring & versioning (`ExamDefinition` → immutable `ExamInstance`), question bank (`QuestionPool`/`Question`), scheduling & access control (`ExamSchedule` + `ExamCenter`), grading/appeals (`ExamResult`/`ExamReview`), and identity (`Student`/`Instructor`/`StudentGroup` linked 1:1 to ABP `IdentityUser`, mutually exclusive).
+- **`Ems.ExamExecution`** — the **local server at each exam center**: delivery (`DeliveredExam`, a synced read-only package with `DataVersion`), the student attempt state machine (`ExamSession` with single-session + 30s grace-period invariants), room management (`ExamCenterSession` with dynamic unlock codes), and sync tracking (`SyncRecord`).
+
+Key design intentions to keep in mind when adding features:
+- **Zero data loss**: results are written to an Outbox table in the same transaction as the session status update, then pushed to the central server via RabbitMQ when online (ABP Inbox/Outbox + `Volo.Abp.EventBus.Distributed`).
+- **Notify-then-Download sync**: central publishes a lightweight `ExamPublishedEto`; the local server downloads structured data via ABP Dynamic C# API Client Proxies and large media via `IHttpClientFactory` + Polly streaming (not the proxy, to avoid loading large blobs into RAM).
+- **Server-to-server auth**: OAuth2 client credentials — each exam center is a registered OpenIddict client (`ExamCenter.LinkedClientId`), scope `ExamManagement.Sync`.
+- **Student auth**: JWT issued by the central server, validated offline on the local server (public key cached during exam download); the local server does **not** sync the full Identity module.
+- **Roles**: `Admin`/`Instructor`/`Student` live in ExamManagement; `Proctor` lives in ExamExecution.
+- **Immutability rules**: `ExamDefinition` cannot be edited once `Published`; `ExamInstance` is immutable (new version = new instance with bumped `DataVersion`); `DeliveredExam` is immutable (updates arrive as a new higher-`DataVersion` package, old one marked `Deprecated` while active sessions finish on it).
+
+> Note: `backend/wiki/plans/` is the design plan. Some cross-cutting pieces (RabbitMQ wiring, Outbox/Inbox, blob storage, the `SyncRecord`/`ExamCenterSession` aggregates) may not be fully implemented yet — verify against the actual `src/` code before assuming a feature exists. The DDD layering and the aggregates listed in `Domain_Definition.md` are the intended domain model.
+
 ## Repository layout
 
 - The repo root holds only `azure.yaml` (azd config), `next-steps.md` (azd boilerplate), and `backend/`.
