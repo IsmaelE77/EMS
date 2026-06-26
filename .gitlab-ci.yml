@@ -1,0 +1,126 @@
+# EMS - GitLab CI/CD
+# Mirrors the GitHub Actions workflow in .github/workflows/azure-dev.yml.
+# Runs build + tests on every push, and azd deploy on the production branch
+# (or via manual run from the GitLab UI: Pipelines -> Run pipeline).
+
+stages:
+  - build
+  - test
+  - deploy
+
+variables:
+  DOTNET_NOLOGO: "true"
+  DOTNET_CLI_TELEMETRY_OPTOUT: "true"
+  NUGET_PACKAGES: "$CI_PROJECT_DIR/.nuget/packages"
+  YARN_CACHE_FOLDER: "$CI_PROJECT_DIR/.yarn-cache"
+
+# ---------------------------------------------------------------------------
+# Base image: .NET 10 SDK. Node + Yarn are added in before_script because the
+# ABP HttpApi.Host projects (which contain the LeptonXLite client libs) need
+# them for `yarn install`.
+# ---------------------------------------------------------------------------
+default:
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  cache:
+    - key:
+        files:
+          - backend/Ems.ExamManagement/src/Ems.ExamManagement.HttpApi.Host/yarn.lock
+          - backend/Ems.ExamExecution/src/Ems.ExamExecution.HttpApi.Host/yarn.lock
+      paths:
+        - .yarn-cache
+      policy: pull-push
+    - key: "nuget-${CI_COMMIT_REF_SLUG}"
+      paths:
+        - .nuget/packages
+      policy: pull-push
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq curl gnupg ca-certificates
+    # Node.js 20 LTS (ABP LeptonXLite client libs need it)
+    - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    - apt-get install -y -qq nodejs
+    - npm install -g yarn
+    - dotnet tool install -g Volo.Abp.Cli || true
+    - export PATH="$PATH:$HOME/.dotnet/tools"
+
+# ---------------------------------------------------------------------------
+# build: restore + build the whole Ems.slnx
+# ---------------------------------------------------------------------------
+build:
+  stage: build
+  script:
+    - cd backend/Ems.ExamManagement/src/Ems.ExamManagement.HttpApi.Host && abp install-libs && cd -
+    - cd backend/Ems.ExamExecution/src/Ems.ExamExecution.HttpApi.Host && abp install-libs && cd -
+    - dotnet build backend/Ems.slnx -v minimal -c Release
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ---------------------------------------------------------------------------
+# test: run the xUnit test projects (SQLite in-memory; no Postgres needed)
+# ---------------------------------------------------------------------------
+test:
+  stage: test
+  needs: ["build"]
+  script:
+    - dotnet test backend/Ems.slnx --nologo -v minimal -c Release
+      --logger "console;verbosity=minimal"
+      --test-adapter-path:. --collect:"XPlat Code Coverage"
+  artifacts:
+    when: always
+    paths:
+      - "**/TestResults/**"
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: "**/TestResults/*/coverage.cobertura.xml"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH
+
+# ---------------------------------------------------------------------------
+# deploy: provision + deploy to Azure Container Apps with `azd`.
+# Triggered only on the `production` branch or a manual pipeline run.
+#
+# Auth: this job uses a plain service principal (client-id + client-secret +
+# tenant-id). OIDC federated credentials are not yet wired for GitLab — if you
+# set those up in Azure (federated credential provider = "gitlab"), switch to
+# `azd auth login --client-id ... --federated-credential-provider gitlab ...`.
+# Required CI/CD variables (Settings -> CI/CD -> Variables):
+#   AZURE_CLIENT_ID        - App registration (service principal) appId
+#   AZURE_CLIENT_SECRET    - Service principal password  (MASKED, protected)
+#   AZURE_TENANT_ID         - Azure AD tenant id
+#   AZURE_SUBSCRIPTION_ID   - Target subscription id
+#   AZURE_ENV_NAME           - azd environment name (e.g. ems-prod)
+#   AZURE_LOCATION           - Azure region (e.g. uksouth)
+#   AZURE_USERNAME           - same as AZURE_CLIENT_ID (kept for parity with GH)
+#   AZURE_PASSWORD            - same as AZURE_CLIENT_SECRET (kept for parity with GH)
+# ---------------------------------------------------------------------------
+deploy:
+  stage: deploy
+  needs: ["test"]
+  environment:
+    name: production
+  variables:
+    AZURE_CLIENT_ID: $AZURE_CLIENT_ID
+    AZURE_CLIENT_SECRET: $AZURE_CLIENT_SECRET
+    AZURE_TENANT_ID: $AZURE_TENANT_ID
+    AZURE_SUBSCRIPTION_ID: $AZURE_SUBSCRIPTION_ID
+    AZURE_ENV_NAME: $AZURE_ENV_NAME
+    AZURE_LOCATION: $AZURE_LOCATION
+    AZURE_USERNAME: $AZURE_USERNAME
+    AZURE_PASSWORD: $AZURE_PASSWORD
+  before_script:
+    - !reference [default, before_script]
+    - curl -fsSL https://aka.ms/install-azd.sh | bash
+    - export PATH="$PATH:/usr/local/bin"
+  script:
+    - azd auth login
+      --client-id "$AZURE_CLIENT_ID"
+      --client-secret "$AZURE_CLIENT_SECRET"
+      --tenant-id "$AZURE_TENANT_ID"
+    - azd provision --no-prompt
+    - azd deploy --no-prompt
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"           # manual Run pipeline
+      when: manual
+    - if: $CI_COMMIT_BRANCH == "production"
